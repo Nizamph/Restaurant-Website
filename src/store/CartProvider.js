@@ -1,24 +1,53 @@
-import CartContext from "./cart-context"
-import React, { useState } from "react"
+import React, { useState } from "react";
+import CartContext from "./cart-context";
+
 const CartProvider = (props) => {
-       const [items, updateItems] = useState([])
+  const [addItems, setAddItems] = useState([]);
+
   const addItemToCartHandler = (item) => {
-     updateItems([...items, item])
-    console.log('inside addItemToCartHandler', cartContext)
-  }
+    let cartItems = [...addItems];
+    let hasItem = false;
+    cartItems.forEach((product) => {
+      if (product.id === item.id) {
+        hasItem = true;
+        product.quantity = Number(product.quantity) + Number(item.quantity);
+      }
+    });
+    if (hasItem) {
+      setAddItems(cartItems);
+    } else {
+      setAddItems((prevItems) => {
+        return [...prevItems, item];
+      });
+    }
+  };
 
-  const removeItemFromCartHandler = id => {}
-
+  const removeItemFromCartHandler = (item) => {
+    const cartItems = [...addItems];
+    cartItems.forEach((product, index) => {
+      if (product.id === item.id && item.quantity <= 1) {
+        cartItems.splice(index, 1);
+        setAddItems(cartItems);
+      }
+      if (product.id === item.id && item.quantity > 1) {
+        product.quantity = Number(product.quantity) - 1;
+        setAddItems(cartItems);
+      }
+    });
+  };
 
   const cartContext = {
-    items:items,
-    addItem: addItemToCartHandler ,
+    items: addItems,
+    totalAmount: 0,
+    addItem: addItemToCartHandler,
     removeItem: removeItemFromCartHandler,
-  }
-  return <CartContext.Provider value={cartContext}>
-    {console.log('inside CartOnctextProvider', cartContext)}
-    {props.children}
-  </CartContext.Provider>
-}
+  };
+
+  return (
+    <CartContext.Provider value={cartContext}>
+      {props.children}
+    </CartContext.Provider>
+  );
+};
 
 export default CartProvider;
